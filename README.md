@@ -1,56 +1,46 @@
 # Battleship in C
 
-A terminal-based implementation of the classic naval combat game written in **C99**. It features an aligned dual-radar interface with ANSI colors, dynamic fleet sizing, a single-player mode against a computer AI, and a custom **bow (headshot) critical hit rule**.
+A terminal-based Battleship game written in C99. Features a clean dual-board display with ANSI colors, a single-player mode against a computer AI, local two-player mode, and a custom **headshot rule**.
 
 ---
 
-## Game Overview
+## Rules & How to Play
 
-Two players secretly deploy their naval fleets onto a grid (default $10 \times 10$). Players take turns calling out coordinates to strike enemy waters. The first player to sink all enemy warships wins.
+The game is played on a grid (default 10x10) where both players secretly place their fleet:
 
-### The Bow (Headshot) Rule
-In traditional Battleship, every single segment of a ship must be struck to sink it. 
-
-In this version:
-- Each ship has an identifiable **bow (head)** at its placement origin.
-- **Direct hit on the bow**: Triggers an instant critical hit?the ship's health drops immediately to 0 and the **entire ship sinks in one shot**, regardless of its size.
-- **Hit on any other segment**: Deals standard damage (reduces ship HP by 1).
+- **Turn-based combat**: Players take turns entering coordinates `(row col)` to attack the opponent's grid.
+- **Hits and Misses**:
+  - If a shot hits open water, it is marked as a miss (`o`).
+  - If a shot hits a ship segment, it is marked as a hit (`X`) and reduces the ship's HP by 1.
+- **The Headshot Rule**:
+  - Each ship has a "head" (its starting placement coordinate).
+  - If you hit the head directly, the entire ship is destroyed instantly, regardless of its size.
+- **Winning**: The first player to sink all enemy ships wins the match.
 
 ---
 
-## Fleet Composition
+## Ships
 
-The game includes 5 historic naval warship classes:
+The game includes 5 types of historical warships:
 
-| Symbol | Ship Name | Class | Length |
+| Symbol | Name | Class | Length |
 | :---: | :--- | :--- | :---: |
 | **S** | **Shinano** | Aircraft Carrier | **5** |
-| **Y** | **Yamato** | Heavy Battleship | **4** |
-| **B** | **Belfast** | Light Cruiser | **3** |
+| **Y** | **Yamato** | Battleship | **4** |
+| **B** | **Belfast** | Cruiser | **3** |
 | **L** | **Laffey** | Destroyer | **2** |
 | **A** | **Albacore** | Submarine | **1** |
 
-The number of ships scales dynamically based on board area ($N \times M$):
-- Shinano: $\lfloor \text{area} / 70 \rfloor$
-- Yamato: $\lfloor \text{area} / 55 \rfloor$
-- Belfast: $\lfloor \text{area} / 40 \rfloor$
-- Laffey: $\lfloor \text{area} / 30 \rfloor$
-- Albacore: $\lfloor \text{area} / 20 \rfloor$
-
-*(On a standard $10 \times 10$ board, each player commands 12 ships).*
+On a standard 10x10 board, each player commands 12 ships in total (1 Shinano, 1 Yamato, 2 Belfasts, 3 Laffeys, and 5 Albacores).
 
 ---
 
 ## Features
 
-- **Game Modes**:
-  - **Single Player (vs. AI)**: Play against a computer opponent using a **Hunt & Target** strategy (searches randomly, then systematically probes adjacent cells upon landing a hit).
-  - **Two Players (Pass & Play)**: Local multiplayer with screen-clearing turn transitions to keep fleets hidden.
-- **Fleet Deployment**:
-  - **Auto-Placement**: Instantly generates legal, non-overlapping ship coordinates.
-  - **Manual Placement**: Allows choosing direction (`H` for horizontal, `V` for vertical) and origin coordinates step-by-step.
-- **Dual Radar Display**: Side-by-side terminal rendering showing your fleet and the enemy radar (with fog of war).
-- **Memory Safety**: Clean dynamic memory allocation with zero memory leaks (verified with Valgrind).
+- **Single Player (vs AI)**: Play against a computer bot that searches for ships and targets adjacent cells once it lands a hit.
+- **Two Players (Pass & Play)**: Local multiplayer with screen-clearing turns to keep secret fleet positions hidden.
+- **Fleet Placement**: Choose between fast automatic random placement or manual coordinate placement.
+- **Side-by-side Terminal Display**: Shows your own fleet and the enemy radar (with fog of war) side by side.
 
 ---
 
@@ -70,21 +60,22 @@ The number of ships scales dynamically based on board area ($N \times M$):
 | :---: | :---: | :--- |
 | `~` | Cyan | Open water |
 | `S / Y / B / L / A` | Green | Your ships |
-| `X` | Red | Hit on a warship |
-| `o` | Gray | Missed shot (water splash) |
-| `#` | Yellow | Sunk / destroyed ship |
+| `X` | Red | Hit on a ship |
+| `o` | Gray | Missed shot |
+| `#` | Yellow | Sunk ship |
 
 ---
 
 ## Project Structure
 
 ```text
+battleship-c/
 ??? src/
-?   ??? main.c       # Game loop, menus, and turn transitions
-?   ??? board.c/.h   # 2D matrix allocation, cleanup, and rendering
+?   ??? main.c       # Game loop and menus
+?   ??? board.c/.h   # Grid allocation and terminal display
 ?   ??? ship.c/.h    # Placement validation and fleet generator
-?   ??? game.c/.h    # Attack mechanics, bow/headshot rule, and AI logic
-?   ??? structs.h    # Shared structures and constants
+?   ??? game.c/.h    # Attack logic, headshot rule, and AI bot
+?   ??? structs.h    # Shared data types and constants
 ??? Makefile         # Build configuration
 ??? README.md
 ```
@@ -93,31 +84,17 @@ The number of ships scales dynamically based on board area ($N \times M$):
 
 ## Build & Run
 
-### Prerequisites
-- GCC compiler supporting C99 (`gcc`)
-- Make utility (`make`)
-
-### Compile
+Compile the game using `make`:
 ```bash
 make
 ```
 
-### Run
+Run the executable:
 ```bash
 ./battleships
 ```
 
-### Clean
+Clean build files:
 ```bash
 make clean
 ```
-
----
-
-## Memory Check
-
-Tested with Valgrind for memory leaks:
-```bash
-valgrind --leak-check=full ./battleships
-```
-Result: `0 errors from 0 contexts`, `0 bytes in use at exit` (clean heap).
