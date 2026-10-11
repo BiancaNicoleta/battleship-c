@@ -1,0 +1,10 @@
+# Executables and object files
+battleships
+*.o
+src/*.o
+
+# OS and Editor files
+.DS_Store
+.vscode/
+.idea/
+*.Zone.Identifier
