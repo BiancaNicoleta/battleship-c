@@ -9,6 +9,7 @@
 #include "game.h"
 
 // Helper to pause until user presses Enter
+
 static void wait_for_enter(const char *msg) {
     if (msg) printf("%s", msg);
     else printf(COLOR_DIM "Press ENTER to continue..." COLOR_RESET);
@@ -17,6 +18,19 @@ static void wait_for_enter(const char *msg) {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
+
+// Transition screen for 2-player pass & play
+static void pass_screen(const char *next_player_name) {
+    clear_screen();
+    printf("\n");
+    printf("  ================================================\n");
+    printf("                  PASS THE LAPTOP                 \n");
+    printf("  ================================================\n\n");
+    printf("  Hand the laptop to %s.\n", next_player_name);
+    printf("  Make sure the other player is not looking at the screen!\n\n");
+    wait_for_enter("  Press ENTER when ready to view your board...");
+}
+
 
 // Deploy fleet either manually or randomly
 static void deploy_fleet(Match *game, Player *player) {
@@ -135,7 +149,13 @@ static void play_game(void) {
 
     // Deploy fleets
     deploy_fleet(&game, &game.p1);
+    if (!is_vs_bot) {
+        pass_screen(game.p2.name);
+    }
     deploy_fleet(&game, &game.p2);
+    if (!is_vs_bot) {
+        pass_screen(game.p1.name);
+    }
 
     // Battle loop
     int turn = 1;
@@ -216,9 +236,11 @@ static void play_game(void) {
                 }
             }
 
-            if (!is_vs_bot) {
-                printf("\n  %s\n", last_event);
-                wait_for_enter(COLOR_DIM "Press ENTER to pass to next player..." COLOR_RESET);
+            if (!is_vs_bot && !game_over) {
+                printf("\n  %s\n\n", last_event);
+                wait_for_enter(COLOR_DIM "Press ENTER to hide your board..." COLOR_RESET);
+                Player *next_p = (turn == 1) ? &game.p2 : &game.p1;
+                pass_screen(next_p->name);
             }
 
         } else {
